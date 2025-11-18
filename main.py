@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.endpoints import sample_endpoint
+from app.endpoints import users_endpoints
 
 app = FastAPI(
     title="FinTrack API",
@@ -18,6 +19,7 @@ app.add_middleware(
 )
 
 app.include_router(sample_endpoint.router, prefix="/api", tags=["Sample"])
+app.include_router(users_endpoints.router, prefix="/api", tags=["Users"])
 
 @app.get("/")
 def root():
@@ -26,3 +28,5 @@ def root():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    
+
