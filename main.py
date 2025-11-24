@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.endpoints import sample_endpoint
-from app.endpoints import users_endpoints
+from app.endpoints import users_endpoint, auth_endpoint 
 
 app = FastAPI(
     title="FinTrack API",
@@ -18,15 +17,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(sample_endpoint.router, prefix="/api", tags=["Sample"])
-app.include_router(users_endpoints.router, prefix="/api", tags=["Users"])
 
 @app.get("/")
 def root():
     return {"message": "🚀 FinTrack API is running successfully!"}
+
+app.include_router(sample_endpoint.router, prefix="/api", tags=["Sample"])
+app.include_router(users_endpoint.router, prefix="/api", tags=["Users"])
+app.include_router(auth_endpoint.router, prefix="/api", tags=["Auth"])  
 
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
     
 
+  
