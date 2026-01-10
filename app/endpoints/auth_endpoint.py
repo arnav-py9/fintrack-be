@@ -1,43 +1,59 @@
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from passlib.hash import bcrypt # type: ignore
-from db_utils.get_connection import get_collection # type: ignore
+from passlib.hash import sha256_crypt
+from db_utils.get_connection import get_collection  # type: ignore
 
 router = APIRouter()
 
+# -------------------- SCHEMAS --------------------
 class SignupRequest(BaseModel):
     email: EmailStr
     password: str
+
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
 
-@router.post("/auth/signup")
+# -------------------- SIGNUP --------------------
+@router.post("/signup")
 def signup(data: SignupRequest):
     users = get_collection("users")
+    finances = get_collection("users_finances")
 
-    existing = users.find_one({"email": data.email})
-    if existing:
+    if users.find_one({"email": data.email}):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
         )
 
+    # ✅ SAFE HASH (NO BCRYPT)
+    hashed_password = sha256_crypt.hash(data.password)
+
     user = {
         "email": data.email,
-        "password": data.password,
+        "password": hashed_password,
         "created_at": datetime.utcnow()
     }
 
     result = users.insert_one(user)
-    return {"message": "Signup successful", "id": str(result.inserted_id)}
+    user_id = result.inserted_id
+
+    finances.insert_one({
+        "user_id": str(user_id),
+        "user_monthly_expenditure": 1000
+    })
+
+    return {
+        "message": "Signup successful",
+        "user_id": str(user_id)
+    }
 
 
-
-@router.post("/auth/login")
+# -------------------- LOGIN --------------------
+@router.post("/login")
 def login(data: LoginRequest):
     users = get_collection("users")
 
@@ -48,8 +64,7 @@ def login(data: LoginRequest):
             detail="User not found"
         )
 
-    # Check password
-    if not data.password==user["password"]:
+    if not sha256_crypt.verify(data.password, user["password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect password"
@@ -57,5 +72,6 @@ def login(data: LoginRequest):
 
     return {
         "message": "Login successful",
-        "email": user["email"]
+        "email": user["email"],
+        "user_id": str(user["_id"])
     }
