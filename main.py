@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from app.endpoints import sample_endpoint
 from app.endpoints import auth_endpoint
 from app.endpoints import users_endpoint
 from app.endpoints import users_finances_endpoint
+from app.endpoints import users_transactions_endpoint
+
 
 app = FastAPI(
     title="FinTrack API",
@@ -38,6 +39,12 @@ app.include_router(
     prefix="/api/users-finances",
     tags=["Users Finances"]
 )
+app.include_router(
+    users_transactions_endpoint.router,
+    prefix="/api/users-transactions",
+    tags=["Users Transactions"]
+)
+
 
 # -------------------- ENTRY POINT --------------------
 if __name__ == "__main__":
