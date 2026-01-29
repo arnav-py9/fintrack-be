@@ -115,3 +115,56 @@ def get_user_transactions(user_id: str = Header(None)):
         transactions.append(txn)
 
     return transactions
+
+@router.put("/{transaction_id}")
+def update_transaction(
+    transaction_id: str,
+    payload: TransactionCreate,
+    user_id: str = Header(None)
+):
+    if not user_id:
+        raise HTTPException(status_code=400, detail="User ID missing")
+
+    collection = get_collection("users_transactions")
+
+    result = collection.update_one(
+        {
+            "_id": ObjectId(transaction_id),
+            "user_id": user_id
+        },
+        {
+            "$set": {
+                "type": payload.type,
+                "amount": payload.amount,
+                "date": datetime.fromisoformat(payload.date),
+                "category": payload.category,
+                "details": payload.details,
+                "updated_at": datetime.utcnow()
+            }
+        }
+    )
+
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    return {"message": "Transaction updated successfully"}
+
+@router.delete("/{transaction_id}")
+def delete_transaction(
+    transaction_id: str,
+    user_id: str = Header(None)
+):
+    if not user_id:
+        raise HTTPException(status_code=400, detail="User ID missing")
+
+    collection = get_collection("users_transactions")
+
+    result = collection.delete_one({
+        "_id": ObjectId(transaction_id),
+        "user_id": user_id
+    })
+
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+
+    return {"message": "Transaction deleted successfully"}
