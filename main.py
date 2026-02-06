@@ -5,6 +5,7 @@ from app.endpoints import auth_endpoint
 from app.endpoints import users_endpoint
 from app.endpoints import users_finances_endpoint
 from app.endpoints import users_transactions_endpoint
+from app.endpoints import users_business_profit_endpoint
 
 
 app = FastAPI(
@@ -45,6 +46,11 @@ app.include_router(
     tags=["Users Transactions"]
 )
 
+app.include_router(
+    users_business_profit_endpoint.router,
+    prefix="/api/users-business-profit",
+    tags=["Business Profit"]
+)
 
 # -------------------- ENTRY POINT --------------------
 if __name__ == "__main__":
