@@ -6,12 +6,12 @@ router = APIRouter()
 
 
 @router.get("/")
-def get_user_finances(user_id: str = Header(None)):
+async def get_user_finances(user_id: str = Header(None)):
     if not user_id:
         raise HTTPException(detail="User ID missing", status_code=400)
 
     finances = get_collection("users_finances")
-    data = finances.find_one({"user_id": user_id})
+    data = await finances.find_one({"user_id": user_id})
 
     if not data:
         raise HTTPException(detail="User finance data not found", status_code=404)
@@ -23,7 +23,7 @@ def get_user_finances(user_id: str = Header(None)):
 
 
 @router.put("/")
-def update_user_finances(data: dict, user_id: str = Header(None)):
+async def update_user_finances(data: dict, user_id: str = Header(None)):
     if not user_id:
         raise HTTPException(detail="User ID missing", status_code=400)
 
@@ -33,7 +33,7 @@ def update_user_finances(data: dict, user_id: str = Header(None)):
     if "_id" in data:
         del data["_id"]
 
-    result = finances.update_one({"user_id": user_id}, {"$set": data})
+    result = await finances.update_one({"user_id": user_id}, {"$set": data})
 
     if result.matched_count == 0:
         raise HTTPException(detail="User finance data not found", status_code=404)

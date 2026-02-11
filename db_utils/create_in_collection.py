@@ -1,6 +1,6 @@
-from db_utils.get_connection import get_collection 
+from db_utils.get_connection import get_collection
 
-def create_user(data: dict):
+async def create_user(data: dict):
     collection = get_collection("users")
-    result = collection.insert_one(data)
+    result = await collection.insert_one(data)
     return {"inserted_id": str(result.inserted_id)}

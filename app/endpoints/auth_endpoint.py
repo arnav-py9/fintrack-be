@@ -19,11 +19,11 @@ class LoginRequest(BaseModel):
 
 # -------------------- SIGNUP --------------------
 @router.post("/signup")
-def signup(data: SignupRequest):
+async def signup(data: SignupRequest):
     users = get_collection("users")
     finances = get_collection("users_finances")
 
-    if users.find_one({"email": data.email}):
+    if await users.find_one({"email": data.email}):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered"
@@ -38,10 +38,10 @@ def signup(data: SignupRequest):
         "created_at": datetime.utcnow()
     }
 
-    result = users.insert_one(user)
+    result = await users.insert_one(user)
     user_id = result.inserted_id
 
-    finances.insert_one({
+    await finances.insert_one({
         "user_id": str(user_id),
         "user_monthly_expenditure": 1000
     })
@@ -54,10 +54,10 @@ def signup(data: SignupRequest):
 
 # -------------------- LOGIN --------------------
 @router.post("/login")
-def login(data: LoginRequest):
+async def login(data: LoginRequest):
     users = get_collection("users")
 
-    user = users.find_one({"email": data.email})
+    user = await users.find_one({"email": data.email})
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

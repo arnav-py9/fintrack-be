@@ -54,7 +54,7 @@ class TransactionResponse(BaseModel):
 # POST: Add transaction
 # -----------------------------
 @router.post("/", response_model=TransactionResponse)
-def add_transaction(
+async def add_transaction(
     transaction: TransactionCreate,
     user_id: str = Header(None)
 ):
@@ -79,31 +79,31 @@ def add_transaction(
     }
 
     collection = get_collection("users_transactions")
-    result = collection.insert_one(txn_data)
+    result = await collection.insert_one(txn_data)
 
     # Prepare response
     txn_data["_id"] = str(result.inserted_id)
     # Check if date is datetime before calling date()
     if isinstance(txn_data["date"], datetime):
          txn_data["date"] = txn_data["date"].date().isoformat()
-    
+
     return txn_data
 
 # -----------------------------
 # GET: Transactions for user
 # -----------------------------
 @router.get("/", response_model=List[TransactionResponse])
-def get_user_transactions(user_id: str = Header(None)):
+async def get_user_transactions(user_id: str = Header(None)):
     if not user_id:
         raise HTTPException(detail="User ID missing", status_code=400)
 
     collection = get_collection("users_transactions")
     transactions = []
 
-    for txn in collection.find({"user_id": user_id}).sort("date", -1):
+    async for txn in collection.find({"user_id": user_id}).sort("date", -1):
         txn["_id"] = str(txn["_id"])
         txn["user_id"] = str(txn["user_id"])
-        
+
         # Ensure date is returned as string YYYY-MM-DD
         date_val = txn.get("date")
         if isinstance(date_val, datetime):
@@ -111,13 +111,13 @@ def get_user_transactions(user_id: str = Header(None)):
         elif isinstance(date_val, str):
             # If it's already a string, keep it (legacy data might be different)
             txn["date"] = date_val
-            
+
         transactions.append(txn)
 
     return transactions
 
 @router.put("/{transaction_id}")
-def update_transaction(
+async def update_transaction(
     transaction_id: str,
     payload: TransactionCreate,
     user_id: str = Header(None)
@@ -127,7 +127,7 @@ def update_transaction(
 
     collection = get_collection("users_transactions")
 
-    result = collection.update_one(
+    result = await collection.update_one(
         {
             "_id": ObjectId(transaction_id),
             "user_id": user_id
@@ -150,7 +150,7 @@ def update_transaction(
     return {"message": "Transaction updated successfully"}
 
 @router.delete("/{transaction_id}")
-def delete_transaction(
+async def delete_transaction(
     transaction_id: str,
     user_id: str = Header(None)
 ):
@@ -159,7 +159,7 @@ def delete_transaction(
 
     collection = get_collection("users_transactions")
 
-    result = collection.delete_one({
+    result = await collection.delete_one({
         "_id": ObjectId(transaction_id),
         "user_id": user_id
     })

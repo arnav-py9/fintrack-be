@@ -17,7 +17,7 @@ class ProfitCreate(BaseModel):
 
 # -------------------- POST: ADD PROFIT --------------------
 @router.post("/")
-def add_profit(
+async def add_profit(
     data: ProfitCreate,
     user_id: str = Header(None)
 ):
@@ -39,20 +39,20 @@ def add_profit(
         "created_at": datetime.utcnow()
     }
 
-    collection.insert_one(profit)
+    await collection.insert_one(profit)
 
     return {"message": "Profit entry added"}
 
 
 # -------------------- GET: FETCH PROFITS --------------------
 @router.get("/")
-def get_profits(user_id: str = Header(None)):
+async def get_profits(user_id: str = Header(None)):
     if not user_id:
         raise HTTPException(status_code=400, detail="User ID missing")
 
     collection = get_collection("users_business_profit")
 
-    profits = list(collection.find({"user_id": ObjectId(user_id)}))
+    profits = await collection.find({"user_id": ObjectId(user_id)}).to_list(length=None)
 
     total_profit = 0
     current_month_profit = 0
