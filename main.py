@@ -15,7 +15,8 @@ load_dotenv()
 app = FastAPI(
     title="FinTrack API",
     description="Backend API for the FinTrack application",
-    version="1.0.0"
+    version="1.0.0",
+    redirect_slashes=False
 )
 
 # -------------------- CORS --------------------
