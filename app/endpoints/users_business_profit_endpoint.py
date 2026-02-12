@@ -54,7 +54,7 @@ async def get_profits(user_id: str = Header(None)):
 
     collection = get_collection("users_business_profit")
 
-    profits = await collection.find({"user_id": ObjectId(user_id)}).to_list(length=None)
+    profits = await collection.find({"user_id": ObjectId(user_id)}).sort("date", -1).to_list(length=None)
 
     total_profit = 0
     current_month_profit = 0
