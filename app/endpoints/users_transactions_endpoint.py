@@ -17,11 +17,18 @@ class TransactionCreate(BaseModel):
     date: str  # Receiving as string YYYY-MM-DD or ISO
     category: str
     details: Optional[str] = None
+    payee: Optional[str] = None
 
     @validator('type')
     def validate_type(cls, v):
         if v not in ['income', 'expense']:
             raise ValueError("type must be 'income' or 'expense'")
+        return v
+
+    @validator('payee')
+    def validate_payee(cls, v):
+        if v and v not in ['Utkarsh', 'Umang', 'Business']:
+            raise ValueError("payee must be 'Utkarsh', 'Umang', or 'Business'")
         return v
 
     @validator('date')
@@ -41,6 +48,7 @@ class TransactionResponse(BaseModel):
     date: str
     category: str
     details: Optional[str] = None
+    payee: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
@@ -74,6 +82,7 @@ async def add_transaction(
         "date": txn_date,
         "category": transaction.category,
         "details": transaction.details,
+        "payee": transaction.payee,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),
     }
@@ -139,6 +148,7 @@ async def update_transaction(
                 "date": datetime.fromisoformat(payload.date),
                 "category": payload.category,
                 "details": payload.details,
+                "payee": payload.payee,
                 "updated_at": datetime.utcnow()
             }
         }
