@@ -9,6 +9,7 @@ from app.endpoints import users_finances_endpoint
 from app.endpoints import users_transactions_endpoint
 from app.endpoints import users_business_profit_endpoint
 from app.endpoints import founders_transactions_endpoint
+from app.endpoints import client_revenue_endpoint
 
 load_dotenv()
 
@@ -59,6 +60,12 @@ app.include_router(
     founders_transactions_endpoint.router,
     prefix="/api/founders-transactions",
     tags=["Founders Transactions"]
+)
+
+app.include_router(
+    client_revenue_endpoint.router,
+    prefix="/api/client-revenue",
+    tags=["Client Revenue"]
 )
 
 # -------------------- ENTRY POINT --------------------
